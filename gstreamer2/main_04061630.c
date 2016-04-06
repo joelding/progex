@@ -1,5 +1,5 @@
 /**
- * main_04061430.c : gst_object_get/set_name
+ * main_04061630.c : gst_object_get/set_name
  */
 
 #include <stdio.h>
@@ -13,7 +13,6 @@ int main(int argc, char *argv[])
 #if defined(ALTERNATIVES) 
 	GstElementFactory *factory = NULL;
 #endif
-	gchar *name = NULL;
 
 	printf("%s build : %s %s\n", argv[0], __DATE__, __TIME__);
 
@@ -40,18 +39,9 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	g_object_get(G_OBJECT(element), "name", &name, NULL);
-	if (name) {
-		g_print("name = %s\n", name);
-		g_free(name);
-	}
-
-	g_object_set(G_OBJECT(element), "name", "fakesrc_hihi", NULL);
-	g_object_get(G_OBJECT(element), "name", &name, NULL);
-	if (name) {
-		g_print("name = %s\n", name);
-		g_free(name);
-	}
+	g_print("%s\n%s\n%s\n", gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory)),
+		gst_element_factory_get_metadata(factory, GST_ELEMENT_METADATA_KLASS),
+		gst_element_factory_get_metadata(factory, GST_ELEMENT_METADATA_DESCRIPTION));
 
 	gst_object_unref(element);
 
