@@ -1,5 +1,5 @@
 /**
- * main_04061750.c : a full graph with fake elements
+ * main_04071000.c : exercise for gst_bin_get_by_name, gst_bin_get_by_interface
  */
 
 #include <stdio.h>
@@ -8,7 +8,10 @@
 
 int main(int argc, char *argv[])
 {
-	GstElement *source = NULL, *filter = NULL, *sink = NULL, *pipeline = NULL;
+	GstElement	*source = NULL, *filter = NULL, *sink = NULL, *pipeline = NULL, 
+			*m = NULL;
+//	GstIterator	*iter = NULL;
+//	int		i = 0;
 
 	printf("%s build : %s %s\n", argv[0], __DATE__, __TIME__);
 
@@ -36,6 +39,7 @@ int main(int argc, char *argv[])
 		g_print("Fail to chain elements\n");
 	}
 
+#if 0
 	if (GST_STATE_CHANGE_ASYNC == gst_element_set_state(pipeline, GST_STATE_PLAYING)) {
 		g_print("pipeline started...\n");
 	}
@@ -45,7 +49,28 @@ int main(int argc, char *argv[])
 	if (GST_STATE_CHANGE_ASYNC == gst_element_set_state(pipeline, GST_STATE_PAUSED)) {
 		g_print("pipeline paused...\n");
 	}
+#endif
+	m = gst_bin_get_by_name(GST_BIN(pipeline), "fakesrc");
+	if (m) {
+		g_print("Found fakesrc0 by name\n");
+	} else {
+		g_print("Found no fakesrc by name\n");
+	}
 
+	m = gst_bin_get_by_name(GST_BIN(pipeline), "fakesrc0");
+	if (m) {
+		g_print("Found fakesrc0 by name\n");
+	}
+
+//	m = NULL;
+//	m = gst_bin_get_by_interface(GST_BIN(pipeline), "fakesrc0");
+
+/*	iter = gst_bin_iterate_elements(GST_BIN(pipeline));
+	while (iter) {
+		g_print("iterate #%d\n", i++);
+
+	}
+*/
 	gst_object_unref(pipeline);
 
 	return 0;

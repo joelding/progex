@@ -1,14 +1,43 @@
 /**
- * main_04061750.c : a full graph with fake elements
+ * main_04071100.c : get messages from a bus
  */
 
 #include <stdio.h>
 #include <unistd.h>
 #include <gst/gst.h>
 
+static GMainLoop *loop;
+
+static gboolean mybusfunc(	GstBus *bus,
+				GstMessage *message,
+				gpointer user_data
+			)
+{
+	g_print("Got %s: ", GST_MESSAGE_TYPE_NAME(message));
+
+	switch (GST_MESSAGE_TYPE(message)) {
+		case GST_MESSAGE_UNKNOWN:
+			break;
+		case GST_MESSAGE_ERROR:
+			break;
+		case GST_MESSAGE_STATE_CHANGED:
+			g_main_loop_quit(loop);
+			break;
+		default:
+			g_print("Unhandled messages");
+			break;
+	}
+
+	g_print("\n");
+
+	return TRUE;
+}
+
 int main(int argc, char *argv[])
 {
-	GstElement *source = NULL, *filter = NULL, *sink = NULL, *pipeline = NULL;
+	GstElement	*source = NULL, *filter = NULL, *sink = NULL, *pipeline = NULL; 
+	GstBus		*bus = NULL;
+	guint bus_watch_id;
 
 	printf("%s build : %s %s\n", argv[0], __DATE__, __TIME__);
 
@@ -21,6 +50,15 @@ int main(int argc, char *argv[])
 		g_print("Fail to new a pipeline\n");
 		return -__LINE__;
 	}
+
+	bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline));
+	if (!bus) {
+		g_print("Fail to new a bus\n");
+		return -__LINE__;
+	}
+
+	bus_watch_id = gst_bus_add_watch(bus, mybusfunc, NULL);
+	g_object_unref(bus);
 
 	/* name of new element, or NULL to automatically create a unique name */
 	source = gst_element_factory_make("fakesrc", NULL);
@@ -40,11 +78,15 @@ int main(int argc, char *argv[])
 		g_print("pipeline started...\n");
 	}
 
-	sleep(10);
+	loop = g_main_loop_new(NULL, FALSE);
+	g_main_loop_run(loop);
 
-	if (GST_STATE_CHANGE_ASYNC == gst_element_set_state(pipeline, GST_STATE_PAUSED)) {
-		g_print("pipeline paused...\n");
+	if (GST_STATE_CHANGE_ASYNC == gst_element_set_state(pipeline, GST_STATE_NULL)) {
+		g_print("pipeline nulled...\n");
 	}
+
+	g_source_remove(bus_watch_id);
+	g_main_loop_unref(loop);
 
 	gst_object_unref(pipeline);
 
