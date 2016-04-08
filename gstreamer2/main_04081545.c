@@ -25,9 +25,9 @@ int main(int argc, char *argv[])
 {
 	GstElement *source = NULL, *tee= NULL, *demux = NULL, *pipeline = NULL; 
 	GstPad *tee_srcpad = NULL, *demux_snkpad = NULL;
-	const GstCaps *caps = NULL;
+	GstCaps *caps = NULL;
 	GstStructure *structure = NULL;
-	guint idx = 0;
+	guint idx = 0, capsize = 0;
 	guint err = 0;
 
 	printf("%s build : %s %s\n", argv[0], __DATE__, __TIME__);
@@ -63,13 +63,20 @@ int main(int argc, char *argv[])
 #endif
 	ERROR_BIT_WR(err, tee_srcpad);
 
-	caps = gst_pad_get_current_caps(tee_srcpad);
-	structure = gst_caps_get_structure(caps, idx++);
-	while (structure) {
-		g_print("name: %s\n", gst_structure_get_name(structure));
-		structure = gst_caps_get_structure(caps, idx++);
+	/* get possible capabilities from a pad */
+	caps = gst_pad_get_pad_template_caps(demux_snkpad);
+	if (!caps) {
+		g_print("Fail to get caps\n");
+		return -__LINE__;
 	}
-	g_object_unref(GST_OBJECT(caps));
+	capsize = gst_caps_get_size(caps);
+	g_print("size = %d\n", capsize);
+	while (idx < capsize) {
+		structure = gst_caps_get_structure(caps, idx);
+		g_print("%d name: %s\n", idx, gst_structure_get_name(structure));
+		++idx;
+	}
+	gst_caps_unref(caps);
 
 	/* check the created elements */
 	if (err) {
