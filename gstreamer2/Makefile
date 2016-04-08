@@ -7,6 +7,7 @@ CFLAGS += `pkg-config --cflags gstreamer-1.0`
 
 #LDFLAGS = `pkg-config --libs gstreamer-0.10`
 LDFLAGS = `pkg-config --libs gstreamer-1.0`
+#LDFLAGS += `pkg-config --libs glib-2.0`
 
 SRCS = $(wildcard *.c)
 TGTS = $(basename $(SRCS))
