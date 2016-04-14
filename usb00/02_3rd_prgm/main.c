@@ -99,7 +99,9 @@ void uart_isr(void) interrupt 4
 
 void main(void)
 {
-	uart_init(9600UL); /* 9600bps, 8-N-1 */
+	char cmd;
+	
+	uart_init(115200UL); /* 115200bps, 8-N-1 */
 	keypad_init();
 	led_init();
 	timer0_init(5);
@@ -108,5 +110,9 @@ void main(void)
 	printf("*** 00 teaches how to play with USB ***\n");
 	printf("build: %s %s\n", __TIME__, __DATE__);
 	
-	while (1);
+	while (1) {
+		printf("Key in: ");
+		scanf("%c", &cmd);
+		printf("\nGot command: %c\n", cmd);
+	}
 }
