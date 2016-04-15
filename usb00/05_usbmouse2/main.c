@@ -99,25 +99,49 @@ void uart_isr(void) interrupt 4
 	}
 }
 
+unsigned char interruptsrc;
+
+#if 0
+#define TRIGGER_FALLING_EDGE 1
+#define TRIGGER_LOW_LEVEL 0
+void int0_init(void)
+{
+	IT0 = TRIGGER_FALLING_EDGE;
+	EX0 = 0;
+}
+
+void int0_isr(void) interrupt 0
+{
+	D12_write_cmd(ID_READ_INT_REG);
+	interruptsrc = D12_read_byte();
+}
+#endif
+
 void main(void)
 {
 	unsigned short id;
+#if 0
 	unsigned char interruptsrc;
+#endif
 	
 	uart_init(115200UL); /* 115200 bps, 8-N-1 */
 	keypad_init();
 	led_init();
 	timer0_init(5);
-	EA = 1; /* enable CPU interrupt */
+//	int0_init();
+
 	
 	printf("\n\n*** USBMOUSE ***\n");
 	printf("build: %s %s\n", __TIME__, __DATE__);
 	
 	id = D12_read_id();
 	printf("D12 chip ID: 0x%04x\n", id);
-
+	
+	EA = 1; /* enable CPU interrupt */
+	
 	usb_set_bus(DISCONNECT);
 	usb_set_bus(CONNECT);
+#if 0
 	while (1) {
 		if (0 == D12_get_int()) {
 			D12_write_cmd(ID_READ_INT_REG);
@@ -125,4 +149,12 @@ void main(void)
 			usb_interrupt_print(interruptsrc);
 		}
 	}
+#else
+	while(1) {
+		if (interruptsrc) {
+			usb_interrupt_print(interruptsrc);
+			interruptsrc = 0;
+		}
+	}
+#endif
 }
