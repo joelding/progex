@@ -119,10 +119,49 @@ void main(void)
 	usb_set_bus(DISCONNECT);
 	usb_set_bus(CONNECT);
 	while (1) {
-		if (0 == D12_get_int()) {
-			D12_write_cmd(ID_READ_INT_REG);
-			interruptsrc = D12_read_byte();
-			usb_interrupt_print(interruptsrc);
+		if (0 != D12_get_int()) {
+			continue;
+		}
+		
+
+		
+		/* The endpoint interrupt bits are cleared by reading the endpoint 
+		last transaction status register through Read Last Transaction Status command 
+		The other bits are cleared after reading the interrupt registers. */
+		D12_write_cmd(ID_READ_INTERRUPT_REGISTER);
+		interruptsrc = D12_read_byte();
+			//usb_interrupt_print(interruptsrc);
+		
+		if (interruptsrc & SUSPEND_CHANGE) {
+			usb_suspend();
+		}
+		
+		if (interruptsrc & BUS_RESET) {
+			usb_reset();
+		}
+		
+		if (interruptsrc & CONTROL_OUT_ENDPOINT) {
+			usb_endpoint0_out();
+		}
+			
+		if (interruptsrc & CONTROL_IN_ENDPOINT) {
+			usb_endpoint0_in();
+		}
+			
+		if (interruptsrc & ENDPOINT_1_IN) {
+			printf("endpoint 1 in\n");
+		}
+			
+		if (interruptsrc & ENDPOINT_1_OUT) {
+			printf("endpoint 1 out\n");
+		}
+			
+		if (interruptsrc & MAIN_OUT_ENDPOINT) {
+			printf("main out endpoint\n");
+		}
+			
+		if (interruptsrc & MAIN_IN_ENDPOINT) {
+			printf("main in endpoint\n");
 		}
 	}
 }

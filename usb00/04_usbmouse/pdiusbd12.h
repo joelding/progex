@@ -29,15 +29,52 @@
 
 #define D12_set_port_out()
 
-/* command ID */
+/* initialization commands: */
 #define ID_SET_MODE 0xF3
-#define ID_READ_INT_REG 0xF4
+
+/* data flow commands: */
+#define ID_READ_INTERRUPT_REGISTER 0xF4
+
+#define CTRL_OUT 0x00
+#define CTRL_IN 0x01
+#define ENDP_1_OUT 0x02
+#define ENDP_1_IN 0x03
+#define ENDP_2_OUT 0x04
+#define ENDP_2_IN 0x05
+
+/*	select endpoint */
+#define ID_SELECT_ENDPOINT 0x00
+
+/*	read last transaction status */
+#define ID_READ_LAST_TRANSACTION_STATUS 0x40
+#define DATA_TRANSCEIVE_SUCCESS (1 << 0)
+#define ERROR_CODE (0x7 << 1)
+#define SETUP_PACKET (1 << 5)
+#define DATA_01_PACKET (1 << 6)
+#define NOT_READ (1 << 7)
+
+#define ID_READ_BUFFER 0xF0
+#define ID_WRITE_BUFFER 0xF0
+
+#define ID_ACK_SETUP 0xF1
+#define ID_CLR_BUFFER 0xF2
+#define ID_VALIDATE_BUFFER 0xFA
 #define ID_READ 0xFD
 
 void D12_write_cmd(unsigned char);
 void D12_write_byte(unsigned char);
 unsigned char D12_read_byte(void);
 unsigned short D12_read_id(void);
+void D12_select_endpoint(unsigned char);
+unsigned char D12_read_endpoint_buffer(unsigned char, unsigned char, unsigned char *);
+unsigned char D12_write_endpoint_buffer(unsigned char, unsigned char, unsigned char *);
+void D12_clr_buffer(void);
+void D12_ack_setup(void);
+unsigned char D12_read_endpoint_last_transaction_status(unsigned char);
+
+
+
+
 
 
 #endif /* __PDIUSBD12_H__ */
