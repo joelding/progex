@@ -62,7 +62,7 @@ void usb_reset(void)
 #define VENDOR (2 << 5)
 
 #define IDX_MAX_PACKET_SIZE 7
-unsigned char *p_dev_desc;
+unsigned char *p_send_data;
 unsigned short send_len;
 unsigned char need_zero_packet;
 unsigned char code dev_desc[18] = {
@@ -74,12 +74,12 @@ unsigned char code dev_desc[18] = {
 	0, /* bDeviceSubClass: Subclass Code (Assigned by USB Org) */
 	0, /* bDeviceProtocol: Protocol Code (Assigned by USB Org) */
 	0x10, /* bMaxPacketSize: Maximum Packet Size for Zero Endpoint. Valid Sizes are 8, 16, 32, 64 */
-	0x88,
 	0x88, /* idVendor: Vendor ID (Assigned by USB Org) */
-	0x01,
-	0x00, /* idProduct: Product ID (Assigned by Manufacturer) */
-	0x10, 
-	0x00, /* bcdDevice: Device Release Number 0.1 */
+	0x88, 
+	0x01, /* idProduct: Product ID (Assigned by Manufacturer) */
+	0x00, 
+	0x00, /* bcdDevice: Device Release Number 1.0 */
+	0x01, 
 	0x01, /* iManufacturer: Index of Manufacturer String Descriptor */
 	0x02, /* iProduct: Index of Product String Descriptor */
 	0x03, /* iSerialNumber: Index of Serial Number String Descriptor */
@@ -88,17 +88,19 @@ unsigned char code dev_desc[18] = {
 
 void usb_endpoint0_send_data(void)
 {
+	//printf("usb_ep0_send_data\n");
+	
 	if (send_len > dev_desc[IDX_MAX_PACKET_SIZE]) {
-		D12_write_endpoint_buffer(CTRL_OUT, dev_desc[IDX_MAX_PACKET_SIZE], dev_desc);
+		D12_write_endpoint_buffer(CTRL_IN, dev_desc[IDX_MAX_PACKET_SIZE], p_send_data);
 		send_len -= dev_desc[IDX_MAX_PACKET_SIZE];
-		p_dev_desc += dev_desc[IDX_MAX_PACKET_SIZE];
+		p_send_data += dev_desc[IDX_MAX_PACKET_SIZE];
 	} else {
 		if (send_len) {
-			D12_write_endpoint_buffer(CTRL_OUT, send_len, dev_desc);
+			D12_write_endpoint_buffer(CTRL_IN, send_len, p_send_data);
 			send_len = 0;
 		} else {
 			if (need_zero_packet) {
-				D12_write_endpoint_buffer(CTRL_OUT, send_len, dev_desc);
+				D12_write_endpoint_buffer(CTRL_IN, send_len, p_send_data);
 				need_zero_packet = 0;
 			}
 		}
@@ -110,6 +112,7 @@ static void parse_setup_packet(unsigned char *buf)
 	unsigned char bmRequestType, bRequest;
 	unsigned short wValue, wIndex, wLength;
 	
+	//printf("parse setup packet:\n");
 	bmRequestType = buf[0];
 	bRequest = buf[1];
 	wValue = buf[2] + (buf[3] << 8);
@@ -117,17 +120,17 @@ static void parse_setup_packet(unsigned char *buf)
 	wLength = buf[6] + (buf[7] << 8);
 	
 	if ((bmRequestType & DATA_PHASE_TRANSFER_DIRECTION) == DEV_TO_HOST) {
-		printf("device->host ");
+		//printf("device->host\nRequest type: ");
 		switch (bmRequestType & TYPE) {
 			case STANDARD:
-				printf("standard ");
+				//printf("standard\n");
 				switch (bRequest) {
 					case GET_DESCRIPTOR:
-						printf("get descriptor:");
+						printf("GET_DESCRIPTOR: ");
 						switch ((wValue >> 8) & 0xFF) {
 							case DEVICE_DESCRIPTOR:
 								printf("device\n");
-								p_dev_desc = dev_desc;
+								p_send_data = dev_desc;
 								if (wLength > dev_desc[0]) {
 									send_len = dev_desc[0];
 									if (0 == (send_len % dev_desc[IDX_MAX_PACKET_SIZE])) {
@@ -139,18 +142,23 @@ static void parse_setup_packet(unsigned char *buf)
 								
 								usb_endpoint0_send_data();
 								break;
+								
 							case CONFIGURATION_DESCRIPTOR:
 								printf("configuration\n");
 								break;
-							case STRING_DESCRIPTOR:
-								printf("string\n");
-								break;
+
 							case INTERFACE_DESCRIPTOR:
 								printf("interface\n");
 								break;
+							
 							case ENDPOINT_DESCRIPTOR:
 								printf("endpoint\n");
 								break;
+							
+							case STRING_DESCRIPTOR:
+								printf("string\n");
+								break;	
+							
 							default:
 								printf("unknown\n");
 								break;
@@ -161,19 +169,37 @@ static void parse_setup_packet(unsigned char *buf)
 				}
 				break;
 			case CLASS:
+				printf("class\n");
 				break;
 			case VENDOR:
+				printf("vendor\n");
 				break;
 			default:
+				printf("Unknown request type %bx\n", bmRequestType);
 				break;
 		}
 	} else { // HOST_TO_DEV
+		printf("host->device ");
+		switch (bmRequestType & TYPE) {
+			case STANDARD:
+				printf("standard output request: ");
+				break;
+			case CLASS:
+				printf("class ");
+				break;
+			case VENDOR:
+				printf("vendor ");
+				break;
+			default:
+				printf("Unknown request type %bx\n", bmRequestType);
+				break;
+		}
 	}
 }
 
 void usb_endpoint0_in(void)
 {
-	printf("endpoint 0 input interrupt\n");
+	printf("endpoint 0 input\n");
 	D12_read_endpoint_last_transaction_status(CTRL_IN);
 	
 	usb_endpoint0_send_data();
@@ -181,7 +207,7 @@ void usb_endpoint0_in(void)
 
 void usb_endpoint0_out(void)
 {
-	printf("endpoint 0 output interrupt\n");
+	printf("endpoint 0 output\n");
 
 	if (D12_read_endpoint_last_transaction_status(CTRL_OUT) & SETUP_PACKET) {
 		D12_read_endpoint_buffer(CTRL_OUT, 16, Buffer);	
@@ -192,4 +218,24 @@ void usb_endpoint0_out(void)
 		D12_read_endpoint_buffer(CTRL_OUT, 16, Buffer);	
 		D12_clr_buffer();
 	}
+}
+
+void usb_endpoint1_in(void)
+{
+	printf("endpoint 1 input\n");
+}
+
+void usb_endpoint1_out(void)
+{
+	printf("endpoint 1 output\n");
+}
+
+void usb_endpoint2_in(void)
+{
+	printf("endpoint 2 input\n");
+}
+
+void usb_endpoint2_out(void)
+{
+	printf("endpoint 2 output\n");
 }

@@ -88,8 +88,9 @@ unsigned char D12_read_endpoint_buffer(unsigned char endp, unsigned char buf_len
 	return len;
 }
 
-void D12_validate_buffer(void)
+static void D12_validate_buffer(void)
 {
+	//printf("Validate buffer\n");
 	D12_write_cmd(ID_VALIDATE_BUFFER);
 }
 

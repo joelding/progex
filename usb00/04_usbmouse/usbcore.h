@@ -23,6 +23,10 @@ void usb_reset(void);
 
 void usb_endpoint0_in(void);
 void usb_endpoint0_out(void);
+void usb_endpoint1_in(void);
+void usb_endpoint1_out(void);
+void usb_endpoint2_in(void);
+void usb_endpoint2_out(void);
 
 #define GET_STATUS (0x00)
 #define CLEAR_FEATURE (0x01)
