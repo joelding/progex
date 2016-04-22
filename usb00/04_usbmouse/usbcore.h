@@ -28,6 +28,7 @@ void usb_endpoint1_out(void);
 void usb_endpoint2_in(void);
 void usb_endpoint2_out(void);
 
+/* standard device requests */
 #define GET_STATUS (0x00)
 #define CLEAR_FEATURE (0x01)
 #define SET_FEATURE (0x03)
@@ -36,11 +37,13 @@ void usb_endpoint2_out(void);
 #define SET_DESCRIPTOR (0x07)
 #define GET_CONFIGURATION (0x08)
 #define SET_CONFIGURATION (0x09)
+#define SET_IDLE (0x0A)
 
 #define DEVICE_DESCRIPTOR (1)
 #define CONFIGURATION_DESCRIPTOR (2)
 #define STRING_DESCRIPTOR (3)
 #define INTERFACE_DESCRIPTOR (4)
 #define ENDPOINT_DESCRIPTOR (5)
+#define REPORT_DESCRIPTOR (0x22)
 
 #endif /* __USBCORE_H__ */

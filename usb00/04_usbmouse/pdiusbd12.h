@@ -29,6 +29,9 @@
 
 #define D12_set_port_out()
 
+#define ID_SET_ADDR_ENABLE 0xD0
+#define ID_SET_EP_ENABLE 0xD8
+
 /* initialization commands: */
 #define ID_SET_MODE 0xF3
 
@@ -41,6 +44,8 @@
 #define ENDP_1_IN 0x03
 #define ENDP_2_OUT 0x04
 #define ENDP_2_IN 0x05
+#define EP_NUM(x) ((x) / 2)
+#define EP_DIR(x) (((x) & 0x1) ? "IN" : "OUT")
 
 /*	select endpoint */
 #define ID_SELECT_ENDPOINT 0x00
@@ -61,6 +66,10 @@
 #define ID_VALIDATE_BUFFER 0xFA
 #define ID_READ 0xFD
 
+#define ID_SET_ENDPOINT_ENABLE 0xD8
+#define ENDPT_ENABLE 0x1
+#define ENDPT_DISABLE 0x0
+
 void D12_write_cmd(unsigned char);
 void D12_write_byte(unsigned char);
 unsigned char D12_read_byte(void);
@@ -71,8 +80,8 @@ unsigned char D12_write_endpoint_buffer(unsigned char, unsigned char, unsigned c
 void D12_clr_buffer(void);
 void D12_ack_setup(void);
 unsigned char D12_read_endpoint_last_transaction_status(unsigned char);
-
-
+void D12_set_usb_addr(unsigned char);
+void D12_set_endpoint(unsigned char);
 
 
 

@@ -61,7 +61,7 @@ unsigned char D12_read_endpoint_buffer(unsigned char endp, unsigned char buf_len
 	D12_read_byte(); /* first byte is reserved */
 	len = D12_read_byte();
 	
-	printf("Read endpoint %bu, ", endp);
+	printf("Read ep%bu %s, ", EP_NUM(endp), EP_DIR(endp));
 	
 	if (len > buf_len) {
 		len = buf_len;
@@ -103,7 +103,7 @@ unsigned char D12_write_endpoint_buffer(unsigned char endp, unsigned char buf_le
 	D12_write_byte(0);
 	D12_write_byte(buf_len);
 	
-	printf("Write endpoint %bu, ", endp);
+	printf("Write ep%bu %s, ", EP_NUM(endp), EP_DIR(endp));
 	printf("buffer %bu bytes\n", buf_len);
 	
 	D12_set_port_out();
@@ -118,6 +118,10 @@ unsigned char D12_write_endpoint_buffer(unsigned char endp, unsigned char buf_le
 		if (((i + 1) % 16) == 0) {
 			printf("\n");
 		}
+	}
+	
+	if ((i % 16) != 0) {
+		printf("\n");
 	}
 	
 	D12_set_port_in();
@@ -146,3 +150,18 @@ unsigned char D12_read_endpoint_last_transaction_status(unsigned char endp)
 	return D12_read_byte();
 }
 
+void D12_set_usb_addr(unsigned char addr)
+{
+	D12_write_cmd(ID_SET_ADDR_ENABLE);
+	D12_write_byte(0x80 | addr);
+}
+
+void D12_set_endpoint(unsigned char enable)
+{
+	D12_write_cmd(ID_SET_ENDPOINT_ENABLE);
+	if (enable) {
+		D12_write_byte(ENDPT_ENABLE);
+	} else {
+		D12_write_byte(ENDPT_DISABLE);
+	}
+}

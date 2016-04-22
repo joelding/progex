@@ -110,7 +110,9 @@ void main(void)
 	timer0_init(5);
 	EA = 1; /* enable CPU interrupt */
 	
-	printf("\n\n*** USBMOUSE ***\n");
+	printf("\n\n\n****************\n");
+	printf(      "*** USBMOUSE ***\n");
+	printf(      "****************\n");
 	printf("build: %s %s\n", __TIME__, __DATE__);
 	
 	id = D12_read_id();
