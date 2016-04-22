@@ -87,6 +87,28 @@ void uart_init(unsigned long bitrate)
 
 volatile unsigned char is_sending;
 
+#define SW1 (1 << 0)
+#define SW2 (1 << 1)
+#define SW3 (1 << 2)
+#define SW4 (1 << 3)
+#define SW5 (1 << 4)
+#define SW6 (1 << 5)
+#define SW7 (1 << 6)
+#define SW8 (1 << 7)
+#define MOVE_LEFT SW1
+#define MOVE_RIGHT SW2
+#define MOVE_DOWN SW3
+#define MOVE_UP SW4
+#define ROLL_UP SW5
+#define ROLL_DOWN SW6
+#define CLICK_LEFT SW7
+#define CLICK_RIGHT SW8
+
+#define CLICK 0
+#define AXIS_X 1
+#define AXIS_Y 2
+#define ROLL 3
+
 void uart_isr(void) interrupt 4
 {
 	if (RI) { /* if received */
@@ -99,10 +121,51 @@ void uart_isr(void) interrupt 4
 	}
 }
 
+void send_mouse_data(void)
+{
+	/* byte[0] bit0: left button, bit1: right button, bit2: middle button
+	 * byte[1] x-axis
+	 * byte[2] y-axis
+	 * byte[3] roll
+	 */
+	unsigned char byte[4] = {0};
+	extern unsigned char ep1_in_is_busy;
+	
+	if (key_val & MOVE_LEFT)
+		byte[AXIS_X] = -1;
+	
+	if (key_val & MOVE_RIGHT)
+		byte[AXIS_X] = 1;
+	
+	if (key_val & MOVE_UP)
+		byte[AXIS_Y] = 1;
+	
+	if (key_val & MOVE_DOWN)
+		byte[AXIS_Y] = -1;
+	
+	if (key_val & ROLL_UP)
+		byte[ROLL] = 1;
+	
+	if (key_val & ROLL_DOWN)
+		byte[ROLL] = -1;
+	
+	if (key_val & CLICK_LEFT)
+		byte[CLICK] |= 0x1;
+	
+	if (key_val & CLICK_RIGHT)
+		byte[CLICK] |= 0x2;
+	
+	D12_write_endpoint_buffer(ENDP_1_IN, 4, byte);
+	ep1_in_is_busy = 1;
+	printf("%02bX %02bX %02bX %02bX\n", byte[0], byte[1], byte[2], byte[3]);
+}
+
 void main(void)
 {
 	unsigned short id;
 	unsigned char interruptsrc;
+	extern unsigned char conf_status;
+	extern unsigned char ep1_in_is_busy;
 	
 	uart_init(115200UL); /* 115200 bps, 8-N-1 */
 	keypad_init();
@@ -161,6 +224,12 @@ void main(void)
 				
 			if (interruptsrc & MAIN_IN_ENDPOINT) {
 				usb_endpoint2_in();
+			}
+		}
+		
+		if (conf_status) {
+			if (!ep1_in_is_busy) {
+				send_mouse_data();
 			}
 		}
 	}

@@ -3,6 +3,7 @@
 
 unsigned char idata Buffer[16];
 unsigned char conf_status;
+unsigned char ep1_in_is_busy;
 
 void delayms(unsigned short ms)
 {
@@ -482,6 +483,8 @@ void usb_endpoint0_out(void)
 void usb_endpoint1_in(void)
 {
 	printf("ep1 input\n");
+	D12_read_endpoint_last_transaction_status(ENDP_1_IN);
+	ep1_in_is_busy = 0;
 }
 
 void usb_endpoint1_out(void)
