@@ -1,10 +1,14 @@
 # Windows Programming
+
 ---
+
 ## Targets
 1. To learn WIN32 programming with MinGW/MinGW-w64
 1. To learn DirectShow programming
 1. To learn encode/decode on Windows platform
+
 ---
+
 ## FAQs
 
 ### Can MinGW Link to MSVC DLL?
@@ -19,9 +23,13 @@ reference: [link](http://www.mingw.org/wiki/MSVC_and_MinGW_DLLs)
 
 ### How to determine which version of Visual Studio was used to compile a static library
 reference: [link](http://stackoverflow.com/questions/1411854/is-there-a-way-to-determine-which-version-of-visual-studio-was-used-to-compile-a)
+
 ---
+
 ## References
 * Petzold, Windows Programming, 5e, Microsoft Press 1998
+
 ---
+
 ## History
 * 2016/05/06 init
